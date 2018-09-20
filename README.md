@@ -1,5 +1,5 @@
 # exopulse epggen tool
-Golang tool is a simple code generator aimed to remedy golang's lack of generics.
+This golang tool is a simple code generator aimed to remedy golang's lack of generics.
 
 [![CircleCI](https://circleci.com/gh/exopulse/epggen.svg?style=svg)](https://circleci.com/gh/exopulse/epggen)
 [![Build Status](https://travis-ci.org/exopulse/epggen.svg?branch=master)](https://travis-ci.org/exopulse/epggen)
