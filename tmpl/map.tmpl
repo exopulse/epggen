@@ -1,0 +1,137 @@
+package {{.Package}}
+
+import "fmt"
+
+// {{.TypeMap}} implements map of {{.Type}} items where key is of type {{.Key}}.
+type {{.TypeMap}} interface {
+    // Put sets new value for specified key. Previous value is returned.
+    Put(key {{.Key}}, value {{.Type}}) {{.Type}}
+
+    // Set sets new value for specified key. This map reference is returned.
+    Set(key {{.Key}}, value {{.Type}}) {{.TypeMap}}
+
+    // Get gets value for specified key.
+    Get(key {{.Key}}) {{.Type}}
+
+    // FindKey finds key using finder func.
+    FindKey(finder func({{.Type}}) bool) (key {{.Key}}, found bool)
+
+    // FindValue finds value using finder func.
+    FindValue(finder func({{.Type}}) bool) (value {{.Type}}, found bool)
+
+    // Count return number of items in this map.
+    Count() int
+
+    // ComputeIfAbsent sets new value for specified key if key is missing. New value is computed via compute function.
+    // Current value is returned.
+    ComputeIfAbsent(key {{.Key}}, compute func({{.Key}}) {{.Type}}) {{.Type}}
+
+    // ComputeIfNotFound sets new value if finder finds no match. New key and value are computed via compute function.
+    // Current key and value are returned.
+    ComputeIfNotFound(finder func({{.Type}}) bool, compute func() ({{.Key}}, {{.Type}})) ({{.Key}}, {{.Type}})
+
+    // Values returns array of map keys.
+    Keys() []{{.Key}}
+
+    // Values returns array of map values.
+    Values() []{{.Type}}
+}
+
+type default{{.TypeMap}} struct {
+    m map[{{.Key}}]{{.Type}}
+}
+
+// New{{.TypeMap}} creates new map.
+func New{{.TypeMap}}() {{.TypeMap}} {
+    return &default{{.TypeMap}}{m: make(map[{{.Key}}]{{.Type}})}
+}
+
+func (m *default{{.TypeMap}}) Put(key {{.Key}}, value {{.Type}}) {{.Type}} {
+    prev := m.m[key]
+
+    m.m[key] = value
+
+    return prev
+}
+
+func (m *default{{.TypeMap}}) Set(key {{.Key}}, value {{.Type}}) {{.TypeMap}} {
+    m.m[key] = value
+
+    return m
+}
+
+func (m *default{{.TypeMap}}) Get(key {{.Key}}) {{.Type}} {
+    return m.m[key]
+}
+
+func (m *default{{.TypeMap}}) FindKey(finder func({{.Type}}) bool) (key {{.Key}}, found bool) {
+    for key, value := range m.m {
+        if finder(value) {
+            return key, true
+        }
+    }
+
+    return Get{{.Key}}ZeroValue(), false
+}
+
+func (m *default{{.TypeMap}}) FindValue(finder func({{.Type}}) bool) (value {{.Type}}, found bool) {
+    for _, value := range m.m {
+        if finder(value) {
+            return value, true
+        }
+    }
+
+    return Get{{.Name}}ZeroValue(), false
+}
+
+func (m *default{{.TypeMap}}) Count() int {
+    return len(m.m)
+}
+
+func (m *default{{.TypeMap}}) ComputeIfAbsent(key {{.Key}}, compute func({{.Key}}) {{.Type}}) {{.Type}} {
+    if value, ok := m.m[key]; ok {
+        return value
+    }
+
+    value := compute(key)
+    m.m[key] = value
+
+    return value
+}
+
+func (m *default{{.TypeMap}}) ComputeIfNotFound(finder func({{.Type}}) bool, compute func() ({{.Key}}, {{.Type}})) ({{.Key}}, {{.Type}}) {
+    for key, value := range m.m {
+        if finder(value) {
+            return key, value
+        }
+    }
+
+    key, value := compute()
+    m.m[key] = value
+
+    return key, value
+}
+
+func (m *default{{.TypeMap}}) Keys() []{{.Key}} {
+    keys := make([]{{.Key}}, len(m.m))
+
+    for key := range m.m {
+        keys = append(keys, key)
+    }
+
+    return keys
+}
+
+func (m *default{{.TypeMap}}) Values() []{{.Type}} {
+    values := make([]{{.Type}}, len(m.m))
+
+    for _, value := range m.m {
+        values = append(values, value)
+    }
+
+    return values
+}
+
+func (m *default{{.TypeMap}}) String() string {
+    return fmt.Sprintf("%v", m.m)
+}
